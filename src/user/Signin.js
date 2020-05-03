@@ -1,116 +1,112 @@
-import React, {useEffect, useState, useContext} from 'react'
-import { Form, Input, Button, Checkbox, Card} from 'antd';
-import AppHeader from '../core/AppHeader';
-
+import React, { useEffect, useState, useContext } from "react";
+import { Form, Input, Button, Checkbox, Card } from "antd";
+import AppHeader from "../core/AppHeader";
+import { Link, Redirect } from "react-router-dom";
+import { signin, authenticate, isAuthenticated } from "../auth/helper";
 
 const Signin = () => {
-  const onFinish = values => {
-    console.log('Success:', values);
+  const [values, setValues] = useState({
+    email: "",
+    password: "",
+    error: "",
+    loading: false,
+    didRedirect: false,
+  });
+
+  const { email, password, error, loading, didRedirect } = values;
+  const { user } = isAuthenticated();
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    setValues({ ...values, error: false, loading: true });
+    signin({ email, password })
+      .then((data) => {
+        if (data.error) {
+          setValues({ ...values, error: data.error, loading: false });
+        } else {
+          authenticate(data, () => {
+            setValues({
+              ...values,
+              didRedirect: true,
+            });
+          });
+          performRedirect();
+        }
+      })
+      .catch(console.log("Signin request failed"));
   };
 
-  const onFinishFailed = errorInfo => {
-    console.log('Failed:', errorInfo);
-  };
-
-
-  // const context = useContext(UserContext)
-    const [email, setEmail] = useState('')
-    const [password, setPassword] = useState('')
-
-    const handleSignUp = () => {
-        // firebase.auth().createUserWithEmailAndPassword(email,password)
-        // .then(res => {
-        //     console.log(res)
-        //     context.setUser({ email: res.user.email, uid: res.user.uid})
-        // })
-        // .catch((error) => {
-        //     console.log(error)
-        //     toast(error.message,{
-        //         type: "error"
-        //     })
-        // })
+  const performRedirect = () => {
+    if (didRedirect) {
+      if (user && user.role === 1) {
+        alert("Redirect to admin");
+        return <Redirect to="/admin/dashboard" />;
+      } else {
+        alert("Redirect to user dashboard");
+        return <Redirect to="/user/dashboard" />;
+      }
     }
+    if (isAuthenticated()) {
+      return <Redirect to="/" />;
+    }
+  };
 
-    const handleSubmit = (event) => {
-        // event.preventDefault()
-        alert(`Hello mayank ${password} ${email} `)
-        handleSignUp()
-	}
-	
-	useEffect(() => {
-		document.title = "Singup"
-		
-	}, [])
-
-    // if(context.user?.uid){
-    //     return <Redirect to="/"/>
-    // }
-
-
+  useEffect(() => {
+    document.title = "Singup";
+  }, []);
 
   return (
-    <>  
-    <AppHeader/> 
-    <Card title="Sign up form" style={{ width: 600 , marginLeft: 200, marginRight: 200, marginTop: 100, alignContent: "center"}}>
-    <Form
-      name="basic"
-      initialValues={{
-        remember: true,
-      }}
-      // onFinish={onFinish}
-      // onFinishFailed={onFinishFailed}
-    >
-      <Form.Item
-        label="Username"
-        name="username"
-        rules={[
-          {
-            required: true,
-            message: 'Please input your email!',
-          },
-        ]}
+    <>
+      <AppHeader />
+      <Card
+        title="Signin form"
+        style={{
+          width: 600,
+          marginLeft: 200,
+          marginRight: 200,
+          marginTop: 100,
+          alignContent: "center",
+        }}
       >
-        <Input 
-                      type='email'
-											name='email'
-											id='email'
-											placeholder=''
-											value={email}
-											onChange={e => setEmail(e.target.value)}/>
-      </Form.Item>
+        <Form
+          name="basic"
+          initialValues={{
+            remember: true,
+          }}
+        >
+          <Form.Item label="Username" name="username">
+            <Input
+              type="email"
+              name="email"
+              id="email"
+              placeholder=""
+              value={email}
+              onChange={(e) =>
+                setValues({ ...values, error: false, email: e.target.value })
+              }
+            />
+          </Form.Item>
 
-      <Form.Item
-        label="Password"
-        name="password"
-        rules={[
-          {
-            required: true,
-            message: 'Please input your password!',
-          },
-        ]}
-      >
-        <Input.Password 
-                      id='password'
-											placeholder=''
-											value={password}
-											onChange={e => setPassword(e.target.value)}
-        />
-      </Form.Item>
+          <Form.Item label="Password" name="password">
+            <Input.Password
+              id="password"
+              placeholder=""
+              value={password}
+              onChange={(e) =>
+                setValues({ ...values, error: false, password: e.target.value })
+              }
+            />
+          </Form.Item>
 
-      <Form.Item >
-        <Button type="primary" htmlType="submit" onClick={handleSubmit}>
-          Submit
-        </Button>
-      </Form.Item>
-      </Form>
-    </Card> 
+          <Form.Item>
+            <Button type="primary" htmlType="submit" onClick={handleSubmit}>
+              Submit
+            </Button>
+          </Form.Item>
+        </Form>
+      </Card>
     </>
   );
 };
 
-export default Signin
-
-
-
-
-
+export default Signin;
