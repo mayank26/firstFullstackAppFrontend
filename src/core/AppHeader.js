@@ -15,7 +15,7 @@ const AppHeader = () => {
   };
 
   return (
-    <Layout className="layout">
+    
       <Header>
         <div className="logo" />
         <Menu theme="dark" mode="horizontal" defaultSelectedKeys={["1"]}>
@@ -39,9 +39,25 @@ const AppHeader = () => {
             </Menu.Item>
           )}
 
+          {isAuthenticated() && isAuthenticated().user.role === 1 && (
+            <Menu.Item key="4">
+              <Link style={currentTab(history, "/admin/dashboard")} to="/admin/dashboard">
+                Admin
+              </Link>
+            </Menu.Item>
+          )}
+
+          {isAuthenticated() && isAuthenticated().user.role === 0 && (
+            <Menu.Item key="4">
+              <Link style={currentTab(history, "/user/dashboard")} to="/user/dashboard">
+                Dashboard
+              </Link>
+            </Menu.Item>
+          )}
+
           {isAuthenticated() && (
             <Menu.Item
-              key="4"
+              key="5"
               onClick={() => {
                 signout(() => {
                   history.push("/");
@@ -53,7 +69,7 @@ const AppHeader = () => {
           )}
         </Menu>
       </Header>
-    </Layout>
+    
   );
 };
 

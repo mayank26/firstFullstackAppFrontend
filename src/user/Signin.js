@@ -52,7 +52,7 @@ const Signin = () => {
   };
 
   useEffect(() => {
-    document.title = "Singup";
+    document.title = "Singin";
   }, []);
 
   return (
